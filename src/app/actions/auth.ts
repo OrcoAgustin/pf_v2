@@ -57,7 +57,7 @@ export async function register(formData: FormData) {
     return { error: 'Error al crear la cuenta. Intentá de nuevo.' }
   }
 
-  redirect('/')
+  redirect('/login?message=confirm-email')
 }
 
 export async function logout() {

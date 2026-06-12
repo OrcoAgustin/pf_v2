@@ -232,6 +232,12 @@ body {
   border-color: var(--color-danger) !important;
 }
 
+.input option {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+
 /* =============================================================================
    Componentes: Cards
    ============================================================================= */
