@@ -55,6 +55,52 @@ function LoginForm() {
           </div>
         )}
 
+        {message === "password-reset-success" && (
+          <div
+            style={{
+              background: "rgba(16, 185, 129, 0.12)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: "var(--radius-md)",
+              padding: "12px 16px",
+              color: "#a7f3d0",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+              marginBottom: "20px",
+              lineHeight: "1.4",
+            }}
+          >
+            <span style={{ fontSize: "16px", marginTop: "1px" }}>✅</span>
+            <span>
+              <strong>¡Contraseña restablecida!</strong> Tu contraseña ha sido actualizada correctamente. Ya podés iniciar sesión.
+            </span>
+          </div>
+        )}
+
+        {message === "reset-email-sent" && (
+          <div
+            style={{
+              background: "rgba(59, 130, 246, 0.12)",
+              border: "1px solid rgba(59, 130, 246, 0.3)",
+              borderRadius: "var(--radius-md)",
+              padding: "12px 16px",
+              color: "#bfdbfe",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+              marginBottom: "20px",
+              lineHeight: "1.4",
+            }}
+          >
+            <span style={{ fontSize: "16px", marginTop: "1px" }}>📧</span>
+            <span>
+              <strong>Correo enviado:</strong> Si el correo está registrado, recibirás un enlace para restablecer tu contraseña en unos minutos.
+            </span>
+          </div>
+        )}
+
         {/* Error message */}
         {state?.error && (
           <div className="auth-error">
@@ -82,9 +128,22 @@ function LoginForm() {
           </div>
 
           <div className="input-group">
-            <label htmlFor="password" className="input-label">
-              Contraseña
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label htmlFor="password" className="input-label" style={{ marginBottom: 0 }}>
+                Contraseña
+              </label>
+              <Link
+                href="/forgot-password"
+                style={{
+                  fontSize: "12px",
+                  color: "var(--color-primary)",
+                  textDecoration: "none",
+                  opacity: 0.8,
+                }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
             <input
               id="password"
               name="password"
