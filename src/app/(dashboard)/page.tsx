@@ -27,17 +27,19 @@ export default async function DashboardPage() {
     recentExpensesResult,
     installmentsResult,
   ] = await Promise.all([
-    supabase.from("profiles").select("preferred_currency").eq("id", user.id).maybeSingle(),
-    supabase.from("current_month_metrics").select("*"),
-    supabase.from("monthly_expenses_by_category").select("*"),
-    supabase.from("monthly_totals").select("*"),
+    supabase.from("profiles").select("display_name, preferred_currency").eq("id", user.id).maybeSingle(),
+    supabase.from("current_month_metrics").select("*").eq("user_id", user.id),
+    supabase.from("monthly_expenses_by_category").select("*").eq("user_id", user.id),
+    supabase.from("monthly_totals").select("*").eq("user_id", user.id),
     supabase.from("expenses")
       .select("id, user_id, category_id, amount, description, currency, date, installment_purchase_id, installment_number, created_at, category:categories(name, icon, color)")
+      .eq("user_id", user.id)
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(5),
     supabase.from("expenses")
       .select("id, user_id, category_id, amount, description, currency, date, installment_purchase_id, installment_number, created_at, category:categories(name, icon, color), purchase:purchases_installments(total_installments)")
+      .eq("user_id", user.id)
       .not("installment_purchase_id", "is", null)
       .gte("date", startOfMonthStr)
       .order("date", { ascending: true })
@@ -45,6 +47,7 @@ export default async function DashboardPage() {
   ]);
 
   const preferredCurrency = profileResult.data?.preferred_currency || "ARS";
+  const displayName = profileResult.data?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "Usuario";
   const metrics = metricsResult.data || [];
   const expensesByCategory = byCategoryResult.data || [];
   const monthlyTotals = totalsResult.data || [];
@@ -54,6 +57,7 @@ export default async function DashboardPage() {
   return (
     <DashboardPageWrapper
       preferredCurrency={preferredCurrency}
+      displayName={displayName}
       metrics={metrics}
       expensesByCategory={expensesByCategory}
       monthlyTotals={monthlyTotals}
@@ -66,6 +70,7 @@ export default async function DashboardPage() {
 // Wrapper simple para resolver tipados
 function DashboardPageWrapper({
   preferredCurrency,
+  displayName,
   metrics,
   expensesByCategory,
   monthlyTotals,
@@ -73,6 +78,7 @@ function DashboardPageWrapper({
   upcomingInstallments,
 }: {
   preferredCurrency: "ARS" | "USD";
+  displayName: string;
   metrics: any[];
   expensesByCategory: any[];
   monthlyTotals: any[];
@@ -82,6 +88,7 @@ function DashboardPageWrapper({
   return (
     <DashboardClient
       initialPreferredCurrency={preferredCurrency}
+      displayName={displayName}
       metrics={metrics}
       expensesByCategory={expensesByCategory}
       monthlyTotals={monthlyTotals}
@@ -90,3 +97,4 @@ function DashboardPageWrapper({
     />
   );
 }
+

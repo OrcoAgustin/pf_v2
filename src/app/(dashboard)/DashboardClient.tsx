@@ -41,6 +41,7 @@ export type UpcomingInstallment = ExpenseWithCategory & {
 
 interface DashboardClientProps {
   initialPreferredCurrency: "ARS" | "USD";
+  displayName: string;
   metrics: CurrentMonthMetrics[];
   expensesByCategory: MonthlyExpenseByCategory[];
   monthlyTotals: MonthlyTotal[];
@@ -50,6 +51,7 @@ interface DashboardClientProps {
 
 export default function DashboardClient({
   initialPreferredCurrency,
+  displayName,
   metrics,
   expensesByCategory,
   monthlyTotals,
@@ -156,10 +158,10 @@ export default function DashboardClient({
               marginBottom: "8px",
             }}
           >
-            Hola, <span className="text-gradient">resumen financiero</span> 👋
+            Hola, <span className="text-gradient">{displayName}</span> 👋
           </h2>
           <p style={{ color: "var(--color-text-muted)", fontSize: "15px" }}>
-            Monitorea tus gastos y compromisos de pago en cuotas.
+            Este es tu resumen financiero. Monitorea tus gastos y compromisos de pago.
           </p>
         </div>
 

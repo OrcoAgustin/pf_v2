@@ -489,10 +489,11 @@ export default function ExpensesClient({
                           gap: "6px",
                           padding: "4px 8px",
                           borderRadius: "var(--radius-sm)",
-                          background: ex.category?.color ? `${ex.category.color}15` : "rgba(255,255,255,0.05)",
-                          border: `1px solid ${ex.category?.color || "var(--color-border)"}25`,
+                          background: ex.category?.color ? `${ex.category.color}1c` : "rgba(255,255,255,0.05)",
+                          border: `1px solid ${ex.category?.color || "var(--color-border)"}35`,
+                          color: ex.category?.color || "var(--color-text-primary)",
                           fontSize: "12px",
-                          fontWeight: 500,
+                          fontWeight: 600,
                         }}
                       >
                         <span>{ex.category?.icon || "📦"}</span>
