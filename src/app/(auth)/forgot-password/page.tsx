@@ -2,24 +2,67 @@
 
 import { sendPasswordResetEmail } from "@/app/actions/auth";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const [cooldown, setCooldown] = useState<number>(0);
 
   const [state, formAction, isPending] = useActionState(
-    async (_prevState: { error?: string; success?: boolean } | undefined, formData: FormData) => {
+    async (
+      _prevState: { error?: string; success?: boolean; rateLimit?: boolean } | undefined,
+      formData: FormData
+    ) => {
       const res = await sendPasswordResetEmail(formData);
       if (res.success) {
+        localStorage.setItem("last_reset_email_time", Date.now().toString());
         // Redirigir a login con un parámetro para mostrar el banner de correo enviado
         router.push("/login?message=reset-email-sent");
         return { success: true };
+      }
+      if (res.rateLimit) {
+        localStorage.setItem("last_reset_email_time", Date.now().toString());
       }
       return res;
     },
     undefined
   );
+
+  useEffect(() => {
+    const checkCooldown = () => {
+      const lastSent = localStorage.getItem("last_reset_email_time");
+      if (lastSent) {
+        const elapsed = Date.now() - parseInt(lastSent, 10);
+        const cooldownTime = 60000; // 60 segundos de cooldown
+        if (elapsed < cooldownTime) {
+          setCooldown(Math.ceil((cooldownTime - elapsed) / 1000));
+        }
+      }
+    };
+
+    checkCooldown();
+
+    if (state?.rateLimit) {
+      setCooldown(120); // 120 segundos en caso de rate limit
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   return (
     <div className="auth-container">
@@ -65,13 +108,15 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             className="btn btn-primary btn-full btn-lg"
-            disabled={isPending}
+            disabled={isPending || cooldown > 0}
           >
             {isPending ? (
               <>
                 <span className="spinner" />
                 Enviando correo...
               </>
+            ) : cooldown > 0 ? (
+              `Esperá ${cooldown}s`
             ) : (
               "Enviar enlace"
             )}

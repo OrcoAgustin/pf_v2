@@ -2,15 +2,59 @@
 
 import { register } from "@/app/actions/auth";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState, useEffect } from "react";
 
 export default function RegisterPage() {
+  const [cooldown, setCooldown] = useState<number>(0);
+
   const [state, formAction, isPending] = useActionState(
-    async (_prevState: { error?: string } | undefined, formData: FormData) => {
-      return await register(formData);
+    async (
+      _prevState: { error?: string; rateLimit?: boolean } | undefined,
+      formData: FormData
+    ) => {
+      const res = await register(formData);
+      if (res?.rateLimit) {
+        localStorage.setItem("last_register_email_time", Date.now().toString());
+      }
+      return res;
     },
     undefined
   );
+
+  useEffect(() => {
+    const checkCooldown = () => {
+      const lastSent = localStorage.getItem("last_register_email_time");
+      if (lastSent) {
+        const elapsed = Date.now() - parseInt(lastSent, 10);
+        const cooldownTime = 60000; // 60 segundos de cooldown
+        if (elapsed < cooldownTime) {
+          setCooldown(Math.ceil((cooldownTime - elapsed) / 1000));
+        }
+      }
+    };
+
+    checkCooldown();
+
+    if (state?.rateLimit) {
+      setCooldown(120); // 120 segundos en caso de rate limit
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   return (
     <div className="auth-container">
@@ -86,13 +130,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             className="btn btn-primary btn-full btn-lg"
-            disabled={isPending}
+            disabled={isPending || cooldown > 0}
           >
             {isPending ? (
               <>
                 <span className="spinner" />
                 Creando cuenta...
               </>
+            ) : cooldown > 0 ? (
+              `Esperá ${cooldown}s`
             ) : (
               "Crear cuenta"
             )}

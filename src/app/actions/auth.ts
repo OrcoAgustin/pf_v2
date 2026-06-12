@@ -52,6 +52,18 @@ export async function register(formData: FormData) {
   })
 
   if (error) {
+    const isRateLimit = 
+      error.code === 'over_email_send_rate_limit' || 
+      error.status === 429 || 
+      error.message?.toLowerCase().includes('rate limit') ||
+      error.message?.toLowerCase().includes('rate_limit');
+
+    if (isRateLimit) {
+      return { 
+        error: 'Límite de envío de correos excedido. Por favor, esperá unos minutos e intentá de nuevo.',
+        rateLimit: true 
+      }
+    }
     if (error.message.includes('already registered')) {
       return { error: 'Este email ya está registrado. Intentá iniciar sesión.' }
     }
@@ -84,6 +96,18 @@ export async function sendPasswordResetEmail(formData: FormData) {
   })
 
   if (error) {
+    const isRateLimit = 
+      error.code === 'over_email_send_rate_limit' || 
+      error.status === 429 || 
+      error.message?.toLowerCase().includes('rate limit') ||
+      error.message?.toLowerCase().includes('rate_limit');
+
+    if (isRateLimit) {
+      return { 
+        error: 'Límite de envío de correos excedido. Por favor, esperá unos minutos e intentá de nuevo.',
+        rateLimit: true 
+      }
+    }
     return { error: 'No se pudo enviar el correo de recuperación. Intentá de nuevo.' }
   }
 
