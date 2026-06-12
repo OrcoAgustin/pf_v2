@@ -221,7 +221,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================================
 
 -- Vista: Gastos del mes actual por categoría
-CREATE OR REPLACE VIEW monthly_expenses_by_category AS
+CREATE OR REPLACE VIEW monthly_expenses_by_category WITH (security_invoker = true) AS
 SELECT
   e.user_id,
   c.id AS category_id,
@@ -239,7 +239,7 @@ WHERE e.date >= DATE_TRUNC('month', CURRENT_DATE)
 GROUP BY e.user_id, c.id, c.name, c.icon, c.color, e.currency, DATE_TRUNC('month', e.date);
 
 -- Vista: Totales mensuales (últimos 12 meses)
-CREATE OR REPLACE VIEW monthly_totals AS
+CREATE OR REPLACE VIEW monthly_totals WITH (security_invoker = true) AS
 SELECT
   e.user_id,
   e.currency,
@@ -252,7 +252,7 @@ GROUP BY e.user_id, e.currency, DATE_TRUNC('month', e.date)
 ORDER BY month;
 
 -- Vista: Métricas del mes actual
-CREATE OR REPLACE VIEW current_month_metrics AS
+CREATE OR REPLACE VIEW current_month_metrics WITH (security_invoker = true) AS
 SELECT
   e.user_id,
   e.currency,
@@ -272,6 +272,5 @@ WHERE e.date >= DATE_TRUNC('month', CURRENT_DATE)
 GROUP BY e.user_id, e.currency;
 
 -- ============================================================================
--- RLS en las vistas (las vistas heredan RLS de las tablas base)
--- No es necesario agregar RLS adicional
+-- RLS en las vistas (las vistas heredan RLS de las tablas base al usar security_invoker)
 -- ============================================================================
